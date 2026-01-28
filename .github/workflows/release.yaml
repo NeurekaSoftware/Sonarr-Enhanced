@@ -63,7 +63,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            SONARR_GIT_TAG=${{ steps.strip_v.outputs.release_no_v }}
+            SONARR_GIT_TAG=${{ steps.sonarr.outputs.release }}
             SONARR_VERSION=${{ steps.strip_v.outputs.release_no_v }}
             BRANCH=main
           tags: |
