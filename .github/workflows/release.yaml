@@ -67,7 +67,7 @@ jobs:
             SONARR_VERSION=${{ steps.strip_v.outputs.release_no_v }}
             BRANCH=main
           tags: |
-            ghcr.io/${{ github.repository_owner }}/sonarr-enhanced:latest
-            ghcr.io/${{ github.repository_owner }}/sonarr-enhanced:${{ steps.strip_v.outputs.release_no_v }}
+            ghcr.io/neurekasoftware/sonarr-enhanced:latest
+            ghcr.io/neurekasoftware/sonarr-enhanced:${{ steps.strip_v.outputs.release_no_v }}
           push: true
           
