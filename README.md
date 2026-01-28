@@ -2,6 +2,10 @@
 
 A custom build of [Sonarr](https://github.com/Sonarr/Sonarr) with several enhancements.
 
+## Quick Start
+
+Simply replace your `linuxserver/sonarr` image with `ghcr.io/neurekasoftware/sonarr-enhanced:latest`
+
 ## Patches
 
 This repository automatically builds Sonarr from the official source code, applying a set of small, focused patches as part of the build process.
@@ -11,10 +15,6 @@ This repository automatically builds Sonarr from the official source code, apply
 | `HighPriorityImports.patch` | Runs download processing and imports at elevated priority to prevent delays caused by background tasks. | N/A |
 | `BypassQueueLimit.patch` | Removes the default three-task limit for download processing and imports, allowing all eligible tasks to run immediately. | N/A |
 | `FixVideoStreamIndex.patch` | Fixes use of global stream indexes in ffprobe calls, preventing full-file scans during media analysis. | [#8363](https://github.com/Sonarr/Sonarr/pull/8363) |
-
-## Quick Start
-
-Simply replace your `linuxserver/sonarr` image with `ghcr.io/neurekasoftware/sonarr-enhanced:latest`
 
 ## Support
 
