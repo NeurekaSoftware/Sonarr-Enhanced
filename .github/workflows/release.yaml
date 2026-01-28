@@ -45,6 +45,15 @@ jobs:
           version="${version#v}"
           echo "release_no_v=$version" >> $GITHUB_OUTPUT
 
+      - name: Set up QEMU (for multi-arch)
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker-container
+          install: true
+
       - name: Build and push Docker image
         if: steps.sonarr.outputs.release != ''
         uses: docker/build-push-action@v6
