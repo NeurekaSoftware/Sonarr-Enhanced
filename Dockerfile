@@ -125,8 +125,10 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
 # Create package_info file in the parent directory of bin/
 RUN if [ -n "$SONARR_VERSION" ]; then \
         echo "Creating package_info file..." && \
-        printf "PackageVersion=%s\nPackageAuthor=Neureka.Dev\nBranch=%s\nUpdateMethod=Docker\n" \
-            "$SONARR_VERSION" "$BRANCH" > /app/sonarr/package_info && \
+        echo "UpdateMethod=docker" >  /app/sonarr/package_info && \
+        echo "Branch=$BRANCH" >> /app/sonarr/package_info && \
+        echo "PackageVersion=$SONARR_VERSION" >> /app/sonarr/package_info && \
+        echo "PackageAuthor=[NeurekaSoftware](https://github.com/NeurekaSoftware)" >> /app/sonarr/package_info && \
         echo "package_info contents:" && \
         cat /app/sonarr/package_info; \
     fi
