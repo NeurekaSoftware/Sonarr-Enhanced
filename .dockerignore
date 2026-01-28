@@ -1,0 +1,23 @@
+# Git metadata (source is already checked out)
+.git
+
+# CI/CD files
+.github
+.gitlab-ci.yml
+azure-pipelines.yml
+
+# IDE and editor files
+.vs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Build outputs (will be generated during build)
+_tests
+TestResults
+
+# OS files
+.DS_Store
+Thumbs.db

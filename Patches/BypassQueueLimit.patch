@@ -1,0 +1,96 @@
+diff --git a/src/NzbDrone.Core/Download/ProcessMonitoredDownloadsCommand.cs b/src/NzbDrone.Core/Download/ProcessMonitoredDownloadsCommand.cs
+index 4b39f1347..f9bbf1e93 100644
+--- a/src/NzbDrone.Core/Download/ProcessMonitoredDownloadsCommand.cs
++++ b/src/NzbDrone.Core/Download/ProcessMonitoredDownloadsCommand.cs
+@@ -7,5 +7,7 @@ public class ProcessMonitoredDownloadsCommand : Command
+         public override bool RequiresDiskAccess => true;
+ 
+         public override bool IsLongRunning => true;
++
++        public override bool BypassQueueLimit => true;
+     }
+ }
+diff --git a/src/NzbDrone.Core/Download/RefreshMonitoredDownloadsCommand.cs b/src/NzbDrone.Core/Download/RefreshMonitoredDownloadsCommand.cs
+index b4b516b61..de07cc130 100644
+--- a/src/NzbDrone.Core/Download/RefreshMonitoredDownloadsCommand.cs
++++ b/src/NzbDrone.Core/Download/RefreshMonitoredDownloadsCommand.cs
+@@ -4,5 +4,6 @@ namespace NzbDrone.Core.Download
+ {
+     public class RefreshMonitoredDownloadsCommand : Command
+     {
++        public override bool BypassQueueLimit => true;
+     }
+ }
+diff --git a/src/NzbDrone.Core/Messaging/Commands/Command.cs b/src/NzbDrone.Core/Messaging/Commands/Command.cs
+index 5aa4cf514..74155b0b5 100644
+--- a/src/NzbDrone.Core/Messaging/Commands/Command.cs
++++ b/src/NzbDrone.Core/Messaging/Commands/Command.cs
+@@ -27,6 +27,7 @@ public virtual bool SendUpdatesToClient
+         public virtual bool RequiresDiskAccess => false;
+         public virtual bool IsExclusive => false;
+         public virtual bool IsLongRunning => false;
++        public virtual bool BypassQueueLimit => false;
+ 
+         public string Name { get; private set; }
+         public DateTime? LastExecutionTime { get; set; }
+diff --git a/src/NzbDrone.Core/Messaging/Commands/CommandExecutor.cs b/src/NzbDrone.Core/Messaging/Commands/CommandExecutor.cs
+index cc263b161..e99c23611 100644
+--- a/src/NzbDrone.Core/Messaging/Commands/CommandExecutor.cs
++++ b/src/NzbDrone.Core/Messaging/Commands/CommandExecutor.cs
+@@ -11,7 +11,7 @@ namespace NzbDrone.Core.Messaging.Commands
+     public class CommandExecutor : IHandle<ApplicationStartedEvent>,
+                                    IHandle<ApplicationShutdownRequested>
+     {
+-        private const int THREAD_LIMIT = 3;
++        internal const int THREAD_LIMIT = 6;
+ 
+         private readonly Logger _logger;
+         private readonly IServiceFactory _serviceFactory;
+diff --git a/src/NzbDrone.Core/Messaging/Commands/CommandQueue.cs b/src/NzbDrone.Core/Messaging/Commands/CommandQueue.cs
+index c44d58d7a..03cfc9809 100644
+--- a/src/NzbDrone.Core/Messaging/Commands/CommandQueue.cs
++++ b/src/NzbDrone.Core/Messaging/Commands/CommandQueue.cs
+@@ -8,6 +8,8 @@ namespace NzbDrone.Core.Messaging.Commands
+ {
+     public class CommandQueue : IEnumerable
+     {
++        private const int QueueLimit = 3;
++
+         private readonly object _mutex = new object();
+         private readonly List<CommandModel> _items;
+ 
+@@ -160,6 +162,21 @@ private bool TryGet(out CommandModel item)
+                     var startedCommands = _items.Where(c => c.Status == CommandStatus.Started)
+                                                 .ToList();
+ 
++                    // Check for commands that bypass queue limit (e.g., RefreshMonitoredDownloads)
++                    var bypassCommand = _items.Where(c => c.Status == CommandStatus.Queued && c.Body.BypassQueueLimit)
++                                              .OrderByDescending(c => c.Priority)
++                                              .ThenBy(c => c.QueuedAt)
++                                              .FirstOrDefault();
++
++                    // If there's a bypass command and no exclusive commands are running, execute it if under limit
++                    if (bypassCommand != null && !startedCommands.Any(c => c.Body.IsExclusive))
++                    {
++                        bypassCommand.StartedAt = DateTime.UtcNow;
++                        bypassCommand.Status = CommandStatus.Started;
++                        item = bypassCommand;
++                        return true;
++                    }
++
+                     var localItem = _items.Where(c =>
+                                           {
+                                               // If an executing command requires disk access don't return a command that
+@@ -207,6 +224,12 @@ private bool TryGet(out CommandModel item)
+                         rval = false;
+                     }
+ 
++                    // Non-bypass commands can only execute if there are fewer than QueueLimit non-bypass commands already running
++                    else if (!localItem.Body.BypassQueueLimit && startedCommands.Count(c => !c.Body.BypassQueueLimit) >= QueueLimit)
++                    {
++                        rval = false;
++                    }
++
+                     // A command ready to execute
+                     else
+                     {

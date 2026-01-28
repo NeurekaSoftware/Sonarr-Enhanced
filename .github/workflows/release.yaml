@@ -1,0 +1,64 @@
+name: Build and Deploy
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-release:
+    name: Build and Deploy Release
+    runs-on: ubuntu-latest
+    concurrency:
+      group: build-release-${{ github.ref }}
+      cancel-in-progress: true
+
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: sonarr
+        name: Get the latest release version
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: Sonarr/Sonarr
+          excludes: prerelease, draft
+      
+      - id: strip_v
+        name: Strip leading "v" from release version
+        run: |
+          version="${{ steps.sonarr.outputs.release }}"
+          version="${version#v}"
+          echo "release_no_v=$version" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        if: steps.sonarr.outputs.release != ''
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            SONARR_GIT_TAG=${{ steps.strip_v.outputs.release_no_v }}
+            SONARR_VERSION=${{ steps.strip_v.outputs.release_no_v }}
+            BRANCH=main
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sonarr-enhanced:latest
+            ghcr.io/${{ github.repository_owner }}/sonarr-enhanced:${{ steps.strip_v.outputs.release_no_v }}
+          push: true
+          

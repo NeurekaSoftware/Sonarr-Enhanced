@@ -1,0 +1,21 @@
+diff --git a/src/Sonarr.Api.V3/Commands/CommandController.cs b/src/Sonarr.Api.V3/Commands/CommandController.cs
+index 1234567..abcdefg 100644
+--- a/src/Sonarr.Api.V3/Commands/CommandController.cs
++++ b/src/Sonarr.Api.V3/Commands/CommandController.cs
+@@ -7,6 +7,7 @@ using NzbDrone.Common.Composition;
+ using NzbDrone.Common.Serializer;
+ using NzbDrone.Common.TPL;
+ using NzbDrone.Core.Datastore.Events;
++using NzbDrone.Core.Download;
+ using NzbDrone.Core.MediaFiles.EpisodeImport.Manual;
+ using NzbDrone.Core.Messaging.Commands;
+ using NzbDrone.Core.Messaging.Events;
+@@ -64,7 +65,7 @@ namespace Sonarr.Api.V3.Commands
+             using (var reader = new StreamReader(Request.Body))
+             {
+                 var body = reader.ReadToEnd();
+-                var priority = commandType == typeof(ManualImportCommand)
++                var priority = commandType == typeof(ManualImportCommand) || commandType == typeof(RefreshMonitoredDownloadsCommand) || commandType == typeof(ProcessMonitoredDownloadsCommand)
+                     ? CommandPriority.High
+                     : CommandPriority.Normal;
+
