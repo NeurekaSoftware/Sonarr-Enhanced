@@ -5,7 +5,7 @@ A drop-in replacement for [Sonarr](https://github.com/Sonarr/Sonarr) that includ
 This Docker image is built automatically from the official Sonarr source and stays up to date with new Sonarr releases.
 
 > [!IMPORTANT]  
-> This project was created to address performance and responsiveness issues encountered during large searches, downloads, and import operations.
+> Sonarr Enhanced exists to improve performance and responsiveness during large searches, heavy download activity, and bulk import operations, without changing Sonarr’s core behavior.
 
 ## Quick Start
 
