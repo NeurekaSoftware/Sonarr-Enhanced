@@ -147,14 +147,12 @@ RUN apk add --no-cache \
     tzdata \
     su-exec
 
-# Create sonarr user and directories
-RUN addgroup -g 1000 sonarr && \
-    adduser -u 1000 -G sonarr -h /config -D sonarr && \
-    mkdir -p /app/sonarr /config && \
-    chown -R sonarr:sonarr /app /config
+# Create directories and set ownership by numeric IDs
+RUN mkdir -p /app/sonarr /config && \
+    chown -R 1000:1000 /app /config
 
 # Copy application from build stage
-COPY --from=backend-build --chown=sonarr:sonarr /app/sonarr /app/sonarr
+COPY --from=backend-build --chown=1000:1000 /app/sonarr /app/sonarr
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
