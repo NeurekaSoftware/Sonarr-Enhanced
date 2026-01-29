@@ -1,4 +1,4 @@
-# Sonarr Enhanced
+# <img width="24px" src="https://raw.githubusercontent.com/Sonarr/Sonarr/refs/heads/v5-develop/Logo/256.png" alt="Sonarr"></img> Sonarr Enhanced
 
 A drop-in replacement for [Sonarr](https://github.com/Sonarr/Sonarr) that includes a small set of targeted fixes and performance improvements.
 
