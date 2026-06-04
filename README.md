@@ -1,5 +1,13 @@
 # <img width="24px" src="https://raw.githubusercontent.com/Sonarr/Sonarr/refs/heads/v5-develop/Logo/256.png" alt="Sonarr"></img> Sonarr Enhanced
 
+> [!WARNING]
+> The improvements introduced by Sonarr Enhanced have been merged into the following forks:
+>
+> - [Radarr](https://github.com/realzombee/Radarr)
+> - [Sonarr](https://github.com/realzombee/Sonarr)
+>
+> These forks include all Sonarr Enhanced changes along with many additional improvements. Sonarr Enhanced has fulfilled its original purpose and is no longer maintained.
+
 A drop-in replacement for [Sonarr](https://github.com/Sonarr/Sonarr) that includes a small set of targeted fixes and performance improvements.
 
 This Docker image is built automatically from the official Sonarr source and stays up to date with new Sonarr releases.
